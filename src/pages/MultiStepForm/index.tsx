@@ -5,6 +5,7 @@ import FileUpload from "./steps/FileUpload";
 import MultiFileUpload from "./steps/MultiFileUpload";
 import Status from "./steps/Status";
 import ProgressBar from "../../components/ProgressBar";
+import useAuth from "../../hooks/useAuth";
 
 const steps = [
   "Basic Details",
@@ -15,6 +16,7 @@ const steps = [
 ];
 
 const MultiStepForm = () => {
+  const { logout } = useAuth();
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState({
     basicDetails: {},
@@ -79,6 +81,14 @@ const MultiStepForm = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
+        <div className="flex justify-end mb-6">
+          <button
+            onClick={logout}
+            className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+          >
+            Logout
+          </button>
+        </div>
         <ProgressBar steps={steps} currentStep={currentStep} />
         <div className="mt-8 bg-white p-8 rounded-lg shadow">
           {renderStep()}

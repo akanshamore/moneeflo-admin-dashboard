@@ -21,7 +21,9 @@ const Login = () => {
   const handleSubmit = async (values: { email: string; password: string }) => {
     try {
       const response = await loginUser(values);
-      dispatch(setCredentials(response));
+      dispatch(setCredentials(response.authToken));
+
+      localStorage.setItem("userToken", response.authToken);
 
       toast.success("Successfully logged in!", {
         position: "top-right",
