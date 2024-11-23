@@ -1,11 +1,23 @@
 import { useCallback } from "react";
 import { useDropzone } from "react-dropzone";
+import { toast } from "react-toastify";
 
 const FileUpload = ({ next, prev, data, updateData }: any) => {
   const onDrop = useCallback(
-    (acceptedFiles: File[]) => {
+    (acceptedFiles: File[], fileRejections: File[]) => {
       if (acceptedFiles.length > 0) {
         updateData("file", acceptedFiles[0]);
+      }
+
+      if (fileRejections.length > 0) {
+        toast.error("Invalid file type. Only PNG and PDF files are allowed.", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
       }
     },
     [updateData]
@@ -59,5 +71,4 @@ const FileUpload = ({ next, prev, data, updateData }: any) => {
     </div>
   );
 };
-
 export default FileUpload;

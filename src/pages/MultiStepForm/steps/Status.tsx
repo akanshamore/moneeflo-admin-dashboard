@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { submitFormData } from "../../../services/api";
+import useAuth from "../../../hooks/useAuth";
 
 interface StatusProps {
   prev: () => void;
@@ -19,6 +20,9 @@ interface StatusProps {
 
 const Status = ({ prev, formData }: StatusProps) => {
   const navigate = useNavigate();
+  const { token } = useAuth();
+
+  console.log("token", token);
   const [status, setStatus] = useState<"submitting" | "success" | "error">(
     "submitting"
   );
@@ -27,37 +31,30 @@ const Status = ({ prev, formData }: StatusProps) => {
   useEffect(() => {
     const submitForm = async () => {
       try {
-        const formDataToSubmit = new FormData();
+        const fileToBase64 = async (file: File): Promise<string> => {
+          return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = (error) => reject(error);
+          });
+        };
 
-        // Append basic details
-        Object.entries(formData.basicDetails).forEach(([key, value]) => {
-          formDataToSubmit.append(`basicDetails[${key}]`, value as string);
-        });
+        const jsonData = {
+          basicDetails: formData.basicDetails,
+          address: formData.address,
 
-        // Append address
-        Object.entries(formData.address).forEach(([key, value]) => {
-          formDataToSubmit.append(`address[${key}]`, value as string);
-        });
+          geolocation: formData.geolocation,
 
-        // Append single file
-        if (formData.file) {
-          formDataToSubmit.append("file", formData.file);
-        }
+          data: {
+            multiFiles: await Promise.all(
+              formData.multiFiles.map((file) => fileToBase64(file))
+            ),
+            file: formData.file ? await fileToBase64(formData.file) : null,
+          },
+        };
 
-        // Append multiple files
-        formData.multiFiles.forEach((file, index) => {
-          formDataToSubmit.append(`multiFiles[${index}]`, file);
-        });
-
-        // Append geolocation
-        if (formData.geolocation) {
-          formDataToSubmit.append(
-            "geolocation",
-            JSON.stringify(formData.geolocation)
-          );
-        }
-
-        await submitFormData(formDataToSubmit);
+        await submitFormData(jsonData, token);
         setStatus("success");
         setMessage("Form submitted successfully!");
         toast.success("Form submitted successfully!");
@@ -69,7 +66,7 @@ const Status = ({ prev, formData }: StatusProps) => {
     };
 
     submitForm();
-  }, [formData]);
+  }, [formData, token]);
 
   const handleDone = () => {
     navigate("/dashboard");

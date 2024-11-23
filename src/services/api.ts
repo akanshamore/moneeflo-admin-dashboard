@@ -9,7 +9,7 @@ export const loginUser = async (credentials: { email: string; password: string }
   return response.data;
 };
 
-export const submitFormData = async (formData: FormData) => {
-  const response = await api.post('/form/submit', formData);
+export const submitFormData = async (formData: FormData,token: string) => {
+  const response = await api.post('/data_table', formData,{headers:{Authorization: `Bearer ${token}`}});  
   return response.data;
 };

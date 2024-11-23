@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
+import { toast } from "react-toastify";
 
 const MultiFileUpload = ({ next, prev, data, updateData }: any) => {
   const [geolocation, setGeolocation] = useState<any>(null);
+  const [files, setFiles] = useState<File[]>(data || []);
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -21,14 +23,47 @@ const MultiFileUpload = ({ next, prev, data, updateData }: any) => {
   }, []);
 
   const onDrop = useCallback(
-    (acceptedFiles: File[]) => {
-      updateData("multiFiles", acceptedFiles.slice(0, 5));
+    (acceptedFiles: File[], rejectedFiles: File[]) => {
+      const totalFiles = files.length + acceptedFiles.length;
+
+      if (totalFiles > 5) {
+        toast.error(
+          "Maximum 5 files allowed. Please remove some files first.",
+          {
+            position: "top-right",
+            autoClose: 3000,
+          }
+        );
+        return;
+      }
+
+      if (rejectedFiles.length > 0) {
+        toast.error("Invalid file type. Only PNG and PDF files are allowed.", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+      }
+
+      const newFiles = [...files, ...acceptedFiles].slice(0, 5);
+      setFiles(newFiles);
+      updateData("multiFiles", newFiles);
       if (geolocation) {
         updateData("geolocation", geolocation);
       }
     },
-    [updateData, geolocation]
+    [files, updateData, geolocation]
   );
+
+  const removeFile = (index: number) => {
+    const newFiles = files.filter((_, i) => i !== index);
+    setFiles(newFiles);
+    updateData("multiFiles", newFiles);
+  };
+
+  const clearAllFiles = () => {
+    setFiles([]);
+    updateData("multiFiles", []);
+  };
 
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
@@ -46,18 +81,37 @@ const MultiFileUpload = ({ next, prev, data, updateData }: any) => {
         className="border-2 border-dashed border-gray-300 p-8 text-center rounded-lg cursor-pointer hover:border-blue-500"
       >
         <input {...getInputProps()} />
-        <p>Drag & drop up to 5 files here, or click to select files</p>
+        <p>
+          Drag & drop up to {5 - files.length} files here, or click to select
+          files
+        </p>
         <p className="text-sm text-gray-500">
           Only PNG and PDF files are allowed
         </p>
       </div>
 
-      {data && data.length > 0 && (
+      {files.length > 0 && (
         <div className="p-4 bg-gray-100 rounded">
-          <p>Selected files:</p>
-          <ul className="list-disc pl-5">
-            {data.map((file: File, index: number) => (
-              <li key={index}>{file.name}</li>
+          <div className="flex justify-between items-center mb-2">
+            <p className="font-semibold">Selected files:</p>
+            <button
+              onClick={clearAllFiles}
+              className="text-red-500 hover:text-red-700 text-sm"
+            >
+              Clear All
+            </button>
+          </div>
+          <ul className="space-y-2">
+            {files.map((file: File, index: number) => (
+              <li key={index} className="flex justify-between items-center">
+                <span>{file.name}</span>
+                <button
+                  onClick={() => removeFile(index)}
+                  className="text-red-500 hover:text-red-700 ml-2"
+                >
+                  Remove
+                </button>
+              </li>
             ))}
           </ul>
         </div>
@@ -83,7 +137,7 @@ const MultiFileUpload = ({ next, prev, data, updateData }: any) => {
           type="button"
           onClick={next}
           className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
-          disabled={!data || data.length === 0}
+          disabled={files.length === 0}
         >
           Next
         </button>
