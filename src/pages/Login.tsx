@@ -53,7 +53,7 @@ const Login = () => {
                   name="email"
                   type="email"
                   className="w-full p-2 border rounded"
-                  placeholder="Email"
+                  placeholder="akanshamore@gmail.com"
                 />
                 {errors.email && touched.email && (
                   <div className="text-red-500 text-sm">{errors.email}</div>
@@ -64,7 +64,7 @@ const Login = () => {
                   name="password"
                   type="password"
                   className="w-full p-2 border rounded"
-                  placeholder="Password"
+                  placeholder="123456"
                 />
                 {errors.password && touched.password && (
                   <div className="text-red-500 text-sm">{errors.password}</div>
