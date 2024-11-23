@@ -1,19 +1,26 @@
 import { useCallback, useEffect, useState } from "react";
-import { useDropzone } from "react-dropzone";
+import { FileRejection, useDropzone } from "react-dropzone";
 import { toast } from "react-toastify";
+import { nextStep, prevStep } from "../../../store/stepSlice";
+import { setGeolocation, setMultiFiles } from "../../../store/formSlice";
+import { useAppDispatch, useAppSelector } from "../../../hooks/store";
 
-const MultiFileUpload = ({ next, prev, data, updateData }: any) => {
-  const [geolocation, setGeolocation] = useState<any>(null);
-  const [files, setFiles] = useState<File[]>(data || []);
+const MultiFileUpload = () => {
+  const { geolocation, multiFiles } = useAppSelector((state) => state.form);
+  const dispatch = useAppDispatch();
+
+  const [files, setFiles] = useState<File[]>(multiFiles || []);
 
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          setGeolocation({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-          });
+          dispatch(
+            setGeolocation({
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+            })
+          );
         },
         (error) => {
           console.error("Error getting location:", error);
@@ -23,7 +30,7 @@ const MultiFileUpload = ({ next, prev, data, updateData }: any) => {
   }, []);
 
   const onDrop = useCallback(
-    (acceptedFiles: File[], rejectedFiles: File[]) => {
+    (acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
       const totalFiles = files.length + acceptedFiles.length;
 
       if (totalFiles > 5) {
@@ -46,23 +53,24 @@ const MultiFileUpload = ({ next, prev, data, updateData }: any) => {
 
       const newFiles = [...files, ...acceptedFiles].slice(0, 5);
       setFiles(newFiles);
-      updateData("multiFiles", newFiles);
+      dispatch(setMultiFiles(newFiles));
+
       if (geolocation) {
-        updateData("geolocation", geolocation);
+        dispatch(setGeolocation(geolocation));
       }
     },
-    [files, updateData, geolocation]
+    [files, geolocation]
   );
 
   const removeFile = (index: number) => {
     const newFiles = files.filter((_, i) => i !== index);
     setFiles(newFiles);
-    updateData("multiFiles", newFiles);
+    dispatch(setMultiFiles(newFiles));
   };
 
   const clearAllFiles = () => {
     setFiles([]);
-    updateData("multiFiles", []);
+    dispatch(setMultiFiles([]));
   };
 
   const { getRootProps, getInputProps } = useDropzone({
@@ -128,14 +136,14 @@ const MultiFileUpload = ({ next, prev, data, updateData }: any) => {
       <div className="flex justify-between">
         <button
           type="button"
-          onClick={prev}
+          onClick={() => dispatch(prevStep())}
           className="bg-gray-500 text-white p-2 rounded hover:bg-gray-600"
         >
           Previous
         </button>
         <button
           type="button"
-          onClick={next}
+          onClick={() => dispatch(nextStep())}
           className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
           disabled={files.length === 0}
         >

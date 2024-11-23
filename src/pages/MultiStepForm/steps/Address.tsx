@@ -1,5 +1,8 @@
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
+import { nextStep, prevStep } from "../../../store/stepSlice";
+import { setAddress } from "../../../store/formSlice";
+import { useAppDispatch, useAppSelector } from "../../../hooks/store";
 
 const validationSchema = Yup.object().shape({
   addressLine1: Yup.string().required("Required"),
@@ -10,11 +13,13 @@ const validationSchema = Yup.object().shape({
   country: Yup.string().required("Required"),
 });
 
-const Address = ({ next, prev, data, updateData }: any) => {
+const Address = () => {
+  const dispatch = useAppDispatch();
+  const { address } = useAppSelector((state) => state.form);
   return (
     <Formik
       initialValues={
-        data || {
+        address || {
           addressLine1: "",
           addressLine2: "",
           city: "",
@@ -25,8 +30,8 @@ const Address = ({ next, prev, data, updateData }: any) => {
       }
       validationSchema={validationSchema}
       onSubmit={(values) => {
-        updateData("address", values);
-        next();
+        dispatch(setAddress(values));
+        dispatch(nextStep());
       }}
     >
       {({ errors, touched }) => (
@@ -101,7 +106,7 @@ const Address = ({ next, prev, data, updateData }: any) => {
           <div className="flex justify-between">
             <button
               type="button"
-              onClick={prev}
+              onClick={() => dispatch(prevStep())}
               className="bg-gray-500 text-white p-2 rounded hover:bg-gray-600"
             >
               Previous

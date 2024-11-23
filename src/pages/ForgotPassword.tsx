@@ -13,7 +13,7 @@ const validationSchema = Yup.object().shape({
 const ForgotPassword = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const handleSubmit = async (values: { email: string }) => {
+  const handleSubmit = async () => {
     try {
       // Simulated API call since no actual implementation is required
       await new Promise((resolve) => setTimeout(resolve, 1000));

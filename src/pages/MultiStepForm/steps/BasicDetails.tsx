@@ -2,6 +2,9 @@ import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
+import { nextStep } from "../../../store/stepSlice";
+import { setBasicDetails } from "../../../store/formSlice";
+import { useAppDispatch, useAppSelector } from "../../../hooks/store";
 
 const validationSchema = Yup.object().shape({
   name: Yup.string().required("Required"),
@@ -9,14 +12,18 @@ const validationSchema = Yup.object().shape({
   phone: Yup.string().required("Required"),
 });
 
-const BasicDetails = ({ next, data, updateData }: any) => {
+const BasicDetails = () => {
+  const dispatch = useAppDispatch();
+  const { basicDetails } = useAppSelector((state) => state.form);
+
   return (
     <Formik
-      initialValues={data || { name: "", email: "", phone: "" }}
+      initialValues={basicDetails || { name: "", email: "", phone: "" }}
       validationSchema={validationSchema}
       onSubmit={(values) => {
-        updateData("basicDetails", values);
-        next();
+        dispatch(setBasicDetails(values));
+
+        dispatch(nextStep());
       }}
     >
       {({ errors, touched, setFieldValue }) => (
@@ -47,7 +54,7 @@ const BasicDetails = ({ next, data, updateData }: any) => {
           <div>
             <PhoneInput
               country={"in"}
-              value={data?.phone}
+              value={basicDetails?.phone}
               onChange={(phone) => setFieldValue("phone", phone)}
               containerClass="w-full"
               inputClass="w-full p-2 border rounded"

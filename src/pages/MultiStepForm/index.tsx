@@ -1,4 +1,3 @@
-import { useState } from "react";
 import BasicDetails from "./steps/BasicDetails";
 import Address from "./steps/Address";
 import FileUpload from "./steps/FileUpload";
@@ -6,6 +5,7 @@ import MultiFileUpload from "./steps/MultiFileUpload";
 import Status from "./steps/Status";
 import ProgressBar from "../../components/ProgressBar";
 import useAuth from "../../hooks/useAuth";
+import { useAppSelector } from "../../hooks/store";
 
 const steps = [
   "Basic Details",
@@ -16,63 +16,21 @@ const steps = [
 ];
 
 const MultiStepForm = () => {
+  const { currentStep } = useAppSelector((state) => state.step);
   const { logout } = useAuth();
-  const [currentStep, setCurrentStep] = useState(0);
-  const [formData, setFormData] = useState({
-    basicDetails: {},
-    address: {},
-    file: null,
-    multiFiles: [],
-    geolocation: null,
-  });
-
-  const nextStep = () =>
-    setCurrentStep((prev) => Math.min(prev + 1, steps.length - 1));
-  const prevStep = () => setCurrentStep((prev) => Math.max(prev - 1, 0));
-
-  const updateFormData = (step: string, data: any) => {
-    setFormData((prev) => ({ ...prev, [step]: data }));
-  };
 
   const renderStep = () => {
     switch (currentStep) {
       case 0:
-        return (
-          <BasicDetails
-            next={nextStep}
-            data={formData.basicDetails}
-            updateData={updateFormData}
-          />
-        );
+        return <BasicDetails />;
       case 1:
-        return (
-          <Address
-            next={nextStep}
-            prev={prevStep}
-            data={formData.address}
-            updateData={updateFormData}
-          />
-        );
+        return <Address />;
       case 2:
-        return (
-          <FileUpload
-            next={nextStep}
-            prev={prevStep}
-            data={formData.file}
-            updateData={updateFormData}
-          />
-        );
+        return <FileUpload />;
       case 3:
-        return (
-          <MultiFileUpload
-            next={nextStep}
-            prev={prevStep}
-            data={formData.multiFiles}
-            updateData={updateFormData}
-          />
-        );
+        return <MultiFileUpload />;
       case 4:
-        return <Status prev={prevStep} formData={formData} />;
+        return <Status />;
       default:
         return null;
     }

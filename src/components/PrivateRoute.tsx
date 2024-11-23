@@ -1,9 +1,9 @@
 import { Navigate } from "react-router-dom";
-import { useSelector } from "react-redux";
 import { RootState } from "../store";
+import { useAppSelector } from "../hooks/store";
 
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
-  const isAuthenticated = useSelector(
+  const isAuthenticated = useAppSelector(
     (state: RootState) => state.auth.isAuthenticated
   );
 

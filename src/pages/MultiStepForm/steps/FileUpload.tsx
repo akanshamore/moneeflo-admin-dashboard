@@ -1,12 +1,17 @@
 import { useCallback } from "react";
-import { useDropzone } from "react-dropzone";
+import { FileRejection, useDropzone } from "react-dropzone";
 import { toast } from "react-toastify";
+import { nextStep, prevStep } from "../../../store/stepSlice";
+import { setFile } from "../../../store/formSlice";
+import { useAppDispatch, useAppSelector } from "../../../hooks/store";
 
-const FileUpload = ({ next, prev, data, updateData }: any) => {
+const FileUpload = () => {
+  const dispatch = useAppDispatch();
+  const { file } = useAppSelector((state) => state.form);
   const onDrop = useCallback(
-    (acceptedFiles: File[], fileRejections: File[]) => {
+    (acceptedFiles: File[], fileRejections: FileRejection[]) => {
       if (acceptedFiles.length > 0) {
-        updateData("file", acceptedFiles[0]);
+        dispatch(setFile(acceptedFiles[0]));
       }
 
       if (fileRejections.length > 0) {
@@ -20,7 +25,7 @@ const FileUpload = ({ next, prev, data, updateData }: any) => {
         });
       }
     },
-    [updateData]
+    [dispatch]
   );
 
   const { getRootProps, getInputProps } = useDropzone({
@@ -45,25 +50,25 @@ const FileUpload = ({ next, prev, data, updateData }: any) => {
         </p>
       </div>
 
-      {data && (
+      {file && (
         <div className="p-4 bg-gray-100 rounded">
-          <p>Selected file: {data.name}</p>
+          <p>Selected file: {file.name}</p>
         </div>
       )}
 
       <div className="flex justify-between">
         <button
           type="button"
-          onClick={prev}
+          onClick={() => dispatch(prevStep())}
           className="bg-gray-500 text-white p-2 rounded hover:bg-gray-600"
         >
           Previous
         </button>
         <button
           type="button"
-          onClick={next}
+          onClick={() => dispatch(nextStep())}
           className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
-          disabled={!data}
+          disabled={!file}
         >
           Next
         </button>

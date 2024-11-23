@@ -1,11 +1,4 @@
-import {
-  BrowserRouter,
-  Routes,
-  Route,
-  Navigate,
-  useNavigate,
-} from "react-router-dom";
-import { Provider, useDispatch } from "react-redux";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 
 import PrivateRoute from "./components/PrivateRoute";
@@ -20,11 +13,12 @@ import "./index.css";
 import { useEffect } from "react";
 import useAuth from "./hooks/useAuth";
 import { setCredentials } from "./store/authSlice";
+import { useAppDispatch } from "./hooks/store";
 
 function App() {
   const { checkAuth } = useAuth();
   const navigate = useNavigate();
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     const token = checkAuth();

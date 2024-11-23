@@ -3,22 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { submitFormData } from "../../../services/api";
 import useAuth from "../../../hooks/useAuth";
+import { prevStep } from "../../../store/stepSlice";
+import { useAppDispatch, useAppSelector } from "../../../hooks/store";
 
-interface StatusProps {
-  prev: () => void;
-  formData: {
-    basicDetails: any;
-    address: any;
-    file: File | null;
-    multiFiles: File[];
-    geolocation: {
-      latitude: number;
-      longitude: number;
-    } | null;
-  };
-}
-
-const Status = ({ prev, formData }: StatusProps) => {
+const Status = () => {
+  const formData = useAppSelector((state) => state.form);
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { token } = useAuth();
 
@@ -53,6 +43,10 @@ const Status = ({ prev, formData }: StatusProps) => {
             file: formData.file ? await fileToBase64(formData.file) : null,
           },
         };
+
+        if (!token) {
+          throw new Error("No token found");
+        }
 
         await submitFormData(jsonData, token);
         setStatus("success");
@@ -128,7 +122,7 @@ const Status = ({ prev, formData }: StatusProps) => {
       <div className="flex justify-between">
         <button
           type="button"
-          onClick={prev}
+          onClick={() => dispatch(prevStep())}
           className="px-6 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
           disabled={status === "submitting"}
         >
